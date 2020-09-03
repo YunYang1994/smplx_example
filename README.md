@@ -1,2 +1,2 @@
 # smplx_example
-s small example for smplx
+a small example for https://github.com/vchoutas/smplx
