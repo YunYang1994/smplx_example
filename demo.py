@@ -11,24 +11,46 @@
 #
 # ================================================================
 
-import pyrender
-import trimesh
 import numpy as np
+
+import h5py
 import smplx
 import torch
+import trimesh
+import pyrender
+from scipy.spatial.transform import Rotation as R
 
+sample = h5py.File("data/sample.h5")
+model  = smplx.create(model_path=".",
+                      model_type="smplx",
+                      gender="male",
+                      use_face_contour=True,
+                      num_betas=10,
+                      num_expression_coeffs=10)
+model.use_pca = False
 
-model = smplx.create(model_path="weights",
-                     model_type="smplx",
-                     gender="male",
-                     use_face_contour=True,
-                     num_betas=10,
-                     num_expression_coeffs=10)
+betas      = torch.from_numpy(sample['betas'].value)
+expression = torch.from_numpy(sample['expression'].value)
+body_pose  = sample['body_pose'].value
 
-betas      = torch.randn([1, model.num_betas], dtype=torch.float32)
-expression = torch.randn([1, model.num_expression_coeffs], dtype=torch.float32)
+left_hand_pose  = torch.from_numpy(sample['left_hand_pose'].value)
+right_hand_pose = torch.from_numpy(sample['right_hand_pose'].value)
 
-output     = model(betas=betas, expression=expression, return_verts=True)
+body_pose       = R.from_matrix(body_pose).as_rotvec().reshape(1, -1)
+left_hand_pose  = R.from_matrix(left_hand_pose).as_rotvec().reshape(1, -1)
+right_hand_pose = R.from_matrix(right_hand_pose).as_rotvec().reshape(1, -1)
+
+body_pose       = torch.from_numpy(body_pose).float()
+left_hand_pose  = torch.from_numpy(left_hand_pose).float()
+right_hand_pose = torch.from_numpy(right_hand_pose).float()
+
+output     = model(betas=betas,
+                   expression=expression,
+                   body_pose=body_pose,
+                   left_hand_pose=left_hand_pose,
+                   right_hand_pose=right_hand_pose,
+                   return_verts=True)
+
 vertices   = output.vertices.detach().cpu().numpy().squeeze()
 joints     = output.joints.detach().cpu().numpy().squeeze()
 
