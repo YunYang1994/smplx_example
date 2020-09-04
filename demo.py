@@ -30,7 +30,6 @@ model  = smplx.create(model_path=".",
 model.use_pca = False
 
 betas      = torch.from_numpy(sample['betas'].value)
-expression = torch.from_numpy(sample['expression'].value)
 body_pose  = sample['body_pose'].value
 
 left_hand_pose  = torch.from_numpy(sample['left_hand_pose'].value)
@@ -45,7 +44,6 @@ left_hand_pose  = torch.from_numpy(left_hand_pose).float()
 right_hand_pose = torch.from_numpy(right_hand_pose).float()
 
 output     = model(betas=betas,
-                   expression=expression,
                    body_pose=body_pose,
                    left_hand_pose=left_hand_pose,
                    right_hand_pose=right_hand_pose,
